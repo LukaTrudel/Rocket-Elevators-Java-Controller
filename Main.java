@@ -172,12 +172,72 @@ class Column{
 
    }
 
-    public Elevator findElevator(int requestedFloor, String requestedDirection){
-        
-        return null;
+    //We use a score system depending on the current elevators state. Since the bestScore and the referenceGap are 
+    //higher values than what could be possibly calculated, the first elevator will always become the default bestElevator, 
+    //before being compared with to other elevators. If two elevators get the same score, the nearest one is prioritized. Unlike
+    //the classic algorithm, the logic isn't exactly the same depending on if the request is done in the lobby or on a floor.
 
+    public Elevator findElevator(int requestedFloor, String requestedDirection){ 
+        HashMap<String, Object> bestElevatorInfo = new HashMap<String, Object>();
+        bestElevatorInfo.put("bestElevator", null);
+        bestElevatorInfo.put("bestScore", 6);
+        bestElevatorInfo.put("referenceGap", Integer.MAX_VALUE);
+            
+        if(requestedFloor == 1){
+            for(Elevator elevator : elevatorsList){
+                if(1 == elevator.currentFloor && elevator.status == "stopped"){
+                    bestElevatorInfo = checkIfElevatorIsBetter(1, elevator, requestedFloor, bestElevatorInfo);
+                }
+                else if(1 == elevator.currentFloor && elevator.status == "idle"){
+                    bestElevatorInfo = checkIfElevatorIsBetter(2, elevator, requestedFloor, bestElevatorInfo);
+                }
+                else if(1 > elevator.currentFloor && elevator.direction == "up"){
+                    bestElevatorInfo = checkIfElevatorIsBetter(3, elevator, requestedFloor, bestElevatorInfo);
+                }
+                else if(1 < elevator.currentFloor && elevator.direction == "down"){
+                    bestElevatorInfo = checkIfElevatorIsBetter(3, elevator, requestedFloor, bestElevatorInfo);
+                }
+                else if(elevator.status == "idle"){
+                    bestElevatorInfo = checkIfElevatorIsBetter(4, elevator, requestedFloor, bestElevatorInfo);
+                }
+                else{
+                    bestElevatorInfo = checkIfElevatorIsBetter(5, elevator, requestedFloor, bestElevatorInfo);
+                }
+            }
+        }
+        else{
+            for(Elevator elevator : elevatorsList){
+                if(requestedFloor == elevator.currentFloor && elevator.status == "idle" && requestedDirection == elevator.direction){
+                    bestElevatorInfo = checkIfElevatorIsBetter(1, elevator, requestedFloor, bestElevatorInfo);
+                }
+                else if(requestedFloor > elevator.currentFloor  && elevator.direction == "up" && requestedDirection == elevator.direction){
+                    bestElevatorInfo = checkIfElevatorIsBetter(2, elevator, requestedFloor, bestElevatorInfo);
+                }
+                else if(requestedFloor < elevator.currentFloor  && elevator.direction == "down" && requestedDirection == elevator.direction){
+                    bestElevatorInfo = checkIfElevatorIsBetter(2, elevator, requestedFloor, bestElevatorInfo);
+                }
+                else if(elevator.status == "stopped"){
+                    bestElevatorInfo = checkIfElevatorIsBetter(4, elevator, requestedFloor, bestElevatorInfo);
+                }
+                else{
+                    bestElevatorInfo = checkIfElevatorIsBetter(5, elevator, requestedFloor, bestElevatorInfo);
+                }
+            }
+        }
+        return (Elevator)bestElevatorInfo.get("bestElevator");
+    }
+
+    public HashMap<String, Object> checkIfElevatorIsBetter(int baseScore, Elevator elevator, int floor, HashMap<String, Object> bestElevatorInfo){
+        if(baseScore < (Integer)bestElevatorInfo.get("bestScore")){
+            bestElevatorInfo.put("bestScore", baseScore);
+            bestElevatorInfo.put("bestElevator", elevator);
+            bestElevatorInfo.put("referenceGap", Math.abs(elevator.currentFloor - floor));
+            
+        }
+        return bestElevatorInfo;
     }
 }
+
 
 class Elevator{
     public int ID;
@@ -256,5 +316,129 @@ public class Main {
 
     public static void main(String[] args) {
         System.out.println("------TESTS------");
+        // Battery battery = new Battery(1, "online", 4, 60, 6, 5);
+        
+        // //--------------// SCENARIO 1 //-----------------------
+        // // B1
+        // battery.columnsList.get(1).elevatorsList.get(0).currentFloor = 20;
+        // battery.columnsList.get(1).elevatorsList.get(0).direction = "down";
+        // battery.columnsList.get(1).elevatorsList.get(0).floorRequestList.add(5);
+    
+        // // B2
+        // battery.columnsList.get(1).elevatorsList.get(1).currentFloor = 3;
+        // battery.columnsList.get(1).elevatorsList.get(1).direction = "up";
+        // battery.columnsList.get(1).elevatorsList.get(1).floorRequestList.add(15);
+    
+        // // B3
+        // battery.columnsList.get(1).elevatorsList.get(2).currentFloor = 13;
+        // battery.columnsList.get(1).elevatorsList.get(2).direction = "down";
+        // battery.columnsList.get(1).elevatorsList.get(2).floorRequestList.add(1);
+    
+        // // B4
+        // battery.columnsList.get(1).elevatorsList.get(3).currentFloor = 15;
+        // battery.columnsList.get(1).elevatorsList.get(3).direction = "down";
+        // battery.columnsList.get(1).elevatorsList.get(3).floorRequestList.add(2);
+    
+        // // B5
+        // battery.columnsList.get(1).elevatorsList.get(4).currentFloor = 6;
+        // battery.columnsList.get(1).elevatorsList.get(4).direction = "down";
+        // battery.columnsList.get(1).elevatorsList.get(4).floorRequestList.add(1);
+        // battery.columnsList.get(1).elevatorsList.get(4).move();
+    
+        //  // User at lobby want's to go to floor 20, Elevator 5 should be sent
+        // System.out.println("User is at the lobby and wants to go to floor 20");
+        // System.out.println("He enters 20 on the pannel");
+        // battery.assignElevator(20, "up");
+
+        
+        // //--------------------------------------------// Scenario 2 //-----------------------------------------------------
+        // // C1
+        // battery.columnsList.get(2).elevatorsList.get(0).currentFloor = 1;
+        // battery.columnsList.get(2).elevatorsList.get(0).direction = "up";
+        // battery.columnsList.get(2).elevatorsList.get(0).floorRequestList.add(21);
+
+        // // C2
+        // battery.columnsList.get(2).elevatorsList.get(1).currentFloor = 23;
+        // battery.columnsList.get(2).elevatorsList.get(1).direction = "up";
+        // battery.columnsList.get(2).elevatorsList.get(1).floorRequestList.add(28);
+
+        // // C3
+        // battery.columnsList.get(2).elevatorsList.get(2).currentFloor = 33;
+        // battery.columnsList.get(2).elevatorsList.get(2).direction = "down";
+        // battery.columnsList.get(2).elevatorsList.get(2).floorRequestList.add(1);
+
+        // // C4
+        // battery.columnsList.get(2).elevatorsList.get(3).currentFloor = 40;
+        // battery.columnsList.get(2).elevatorsList.get(3).direction = "down";
+        // battery.columnsList.get(2).elevatorsList.get(3).floorRequestList.add(24);
+
+        // // C5
+        // battery.columnsList.get(2).elevatorsList.get(4).currentFloor = 39;
+        // battery.columnsList.get(2).elevatorsList.get(4).direction = "down";
+        // battery.columnsList.get(2).elevatorsList.get(4).floorRequestList.add(1);
+                
+        // // User at lobby want's to go to floor 36, Elevator 1 should be sent
+        // System.out.println("User is at the lobby and wants to go to floor 36");
+        // System.out.println("He enters 36 on the pannel");
+        // battery.assignElevator(36, "up");
+
+
+        // //--------------------------------------------// Scenario 3 //-----------------------------------------------------
+        // // D1
+        // battery.columnsList.get(3).elevatorsList.get(0).currentFloor = 58;
+        // battery.columnsList.get(3).elevatorsList.get(0).direction = "down";
+        // battery.columnsList.get(3).elevatorsList.get(0).floorRequestList.add(1);
+
+        // // D2
+        // battery.columnsList.get(3).elevatorsList.get(1).currentFloor = 50;
+        // battery.columnsList.get(3).elevatorsList.get(1).direction = "up";
+        // battery.columnsList.get(3).elevatorsList.get(1).floorRequestList.add(60);
+
+        // // D3
+        // battery.columnsList.get(3).elevatorsList.get(2).currentFloor = 46;
+        // battery.columnsList.get(3).elevatorsList.get(2).direction = "up";
+        // battery.columnsList.get(3).elevatorsList.get(2).floorRequestList.add(58);
+
+        // // D4
+        // battery.columnsList.get(3).elevatorsList.get(3).currentFloor = 1;
+        // battery.columnsList.get(3).elevatorsList.get(3).direction = "up";
+        // battery.columnsList.get(3).elevatorsList.get(3).floorRequestList.add(54);
+
+        // // D5
+        // battery.columnsList.get(3).elevatorsList.get(4).currentFloor = 60;
+        // battery.columnsList.get(3).elevatorsList.get(4).direction = "down";
+        // battery.columnsList.get(3).elevatorsList.get(4).floorRequestList.add(1);
+                
+        // // User at floor 54 want's to go to floor 1, Elevator 1 should be sent
+        // System.out.println("User is at floor 54 and wants to go to the lobby");
+        // System.out.println("He presses on the pannel");
+        // battery.columnsList.get(3).requestElevator(54, "down");
+
+        // //-------------------------// Scenario 4 //------------------------------
+        // // A1
+        // battery.columnsList.get(0).elevatorsList.get(0).currentFloor = -4;
+
+        // // A2
+        // battery.columnsList.get(0).elevatorsList.get(1).currentFloor = 1;
+
+        // //A3
+        // battery.columnsList.get(0).elevatorsList.get(2).currentFloor = -3;
+        // battery.columnsList.get(0).elevatorsList.get(2).direction = "down";
+        // battery.columnsList.get(0).elevatorsList.get(2).floorRequestList.add(-5);
+
+        // // A4
+        // battery.columnsList.get(0).elevatorsList.get(3).currentFloor = -6;
+        // battery.columnsList.get(0).elevatorsList.get(3).direction = "up";
+        // battery.columnsList.get(0).elevatorsList.get(3).floorRequestList.add(1);
+
+        // // A5
+        // battery.columnsList.get(0).elevatorsList.get(4).currentFloor = -1;
+        // battery.columnsList.get(0).elevatorsList.get(4).direction = "down";
+        // battery.columnsList.get(0).elevatorsList.get(4).floorRequestList.add(-6);
+
+        // // User at Basement 3 want's to go to floor 1, Elevator 4 should be sent
+        // System.out.println("User is at SS3 and wants to go to the lobby");
+        // System.out.println("He presses on the pannel");
+        // battery.columnsList.get(0).requestElevator(-3, "up");
     }
 }
