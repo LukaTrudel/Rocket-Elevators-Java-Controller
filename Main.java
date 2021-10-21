@@ -74,8 +74,6 @@ class Battery
 
     }
 
-
-
     public void createBasementFloorRequestButtons(int amountOfBasements){
         var buttonFloor = -1;
         for(var i = 0; i < amountOfBasements; i++){
@@ -126,18 +124,53 @@ class Column{
         this.elevatorsList = new ArrayList<Elevator>();
         this.callButtonsList = new ArrayList<CallButton>();
         this.servedFloors = servedFloors;
+        
         createElevators(amountOfFloors, amountOfElevators);
         createCallButtons(amountOfFloors, isBasement);
 
     }
 
-    public void createElevators(int amountOfFloors, int amountOfElevators){
-
-    }
-
     public void createCallButtons(int amountOfFloors, Boolean isBasement){
+        int callButtonID = 1;
+        if(isBasement){
+            var buttonFloor = -1;
+            for(var i = 0; i < amountOfFloors; i++){
+                var callButton = new CallButton(callButtonID, "OFF", buttonFloor, "up");
+                callButtonsList.add(callButton);
+                buttonFloor --;
+                callButtonID ++;
+            }
+        }
+        else{
+            var buttonFloor = 1;
+            for(var i = 0; i < amountOfFloors; i++){
+                var callButton = new CallButton(callButtonID, "OFF", buttonFloor, "down");
+                callButtonsList.add(callButton);
+                buttonFloor ++;
+                callButtonID ++;
+            }
+        }
 
     }
+
+    public void createElevators(int amountOfFloors, int amountOfElevators){
+        var elevatorID = 1;
+        for(var i = 0; i < amountOfElevators; i++){
+            var elevator = new Elevator(elevatorID, "idle", amountOfFloors, 1);
+            elevatorsList.add(elevator);
+            elevatorID ++;
+        }
+
+    }
+
+   public void requestElevator(int userPosition, String direction){
+       Elevator elevator = findElevator(userPosition, direction);
+       elevator.floorRequestList.add(1);
+        elevator.sortFloorList();
+        elevator.move();
+        elevator.operateDoors();
+
+   }
 
     public Elevator findElevator(int requestedFloor, String requestedDirection){
         
@@ -166,6 +199,14 @@ class Elevator{
     }
 
     public void move(){
+
+    }
+
+    public void sortFloorList(){
+
+    }
+
+    public void operateDoors(){
 
     }
 
