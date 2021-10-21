@@ -65,7 +65,7 @@ class Battery
     
     public void createFloorRequestButtons(int amountOfFloors){
         var buttonFloor = 1;
-        for(var i = 0; i < amountOfFloors; i++){
+        for(int i = 0; i < amountOfFloors; i++){
             var floorRequestButton = new FloorRequestButton(floorRequestButtonID, "OFF", buttonFloor, "up");
             floorRequestButtonsList.add(floorRequestButton);
             buttonFloor++;
@@ -76,7 +76,7 @@ class Battery
 
     public void createBasementFloorRequestButtons(int amountOfBasements){
         var buttonFloor = -1;
-        for(var i = 0; i < amountOfBasements; i++){
+        for(int i = 0; i < amountOfBasements; i++){
             var floorRequestButton = new FloorRequestButton(floorRequestButtonID, "OFF", buttonFloor, "down");
             floorRequestButtonsList.add(floorRequestButton);
             buttonFloor--;
@@ -95,8 +95,8 @@ class Battery
     }
 
     public void assignElevator(int requestedFloor, String direction){
-        var column = this.findBestColumn(requestedFloor);
-        var elevator = column.findElevator(1, direction);
+        Column column = findBestColumn(requestedFloor);
+        Elevator elevator = column.findElevator(1, direction);
         elevator.addNewRequest(1);
         elevator.move();
         elevator.addNewRequest(requestedFloor);
@@ -171,18 +171,18 @@ class Column{
     }
 
    public void requestElevator(int userPosition, String direction){
-       Elevator elevator = findElevator(userPosition, direction);
-       elevator.floorRequestList.add(1);
-        elevator.sortFloorList();
+        Elevator elevator = findElevator(userPosition, direction);
+        elevator.addNewRequest(userPosition);
         elevator.move();
-        elevator.operateDoors();
+        elevator.addNewRequest(1);
+        elevator.move();
         System.out.println("------------------------");
         System.out.println("Elevator: " + elevator.ID + " from column: " + this.ID + " is on it's way to floor: " + userPosition);
         System.out.println("He enters the elevator");
         System.out.println("------------------------");
         System.out.println("Elevator has arrived at floor: " + elevator.currentFloor);
         //System.out.println("He gets out...");
-   }
+    }
 
     //We use a score system depending on the current elevators state. Since the bestScore and the referenceGap are 
     //higher values than what could be possibly calculated, the first elevator will always become the default bestElevator, 
@@ -309,10 +309,20 @@ class Elevator{
     }
 
     public void operateDoors(){
+        
 
     }
 
     public void addNewRequest(int requestedFloor){
+        if(!floorRequestList.contains(requestedFloor)) {
+            floorRequestList.add(requestedFloor);
+        }
+        if(currentFloor < requestedFloor){
+            direction = "up";
+        }
+        if(currentFloor > requestedFloor){
+            direction = "down";
+        }
 
     }
 }
