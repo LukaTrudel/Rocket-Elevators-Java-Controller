@@ -249,6 +249,8 @@ class Elevator{
     public int amountOfFloors;
     public String direction;
     public int currentFloor;
+    public boolean obstruction;
+    public boolean overweight;
     public Door door;
     public ArrayList<Integer> floorRequestList; 
 
@@ -296,8 +298,24 @@ class Elevator{
     }
 
     public void operateDoors(){
-        door.status = "open";
-        door.status = "closed";
+
+        door.status = "opened";
+        //WAIT 5 seconds
+        if (!overweight){
+            door.status = "closing";
+            if(!obstruction){
+                door.status = "closed";
+            } 
+            else {
+                obstruction = false;
+                operateDoors();
+            }
+            
+            while (overweight) {
+                overweight = false;
+                operateDoors();
+            }  
+        }
     }
 
     public void addNewRequest(int requestedFloor){
