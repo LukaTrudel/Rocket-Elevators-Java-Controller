@@ -1,5 +1,6 @@
 import java.util.*;
 
+
 class Battery
 {
     public int ID;
@@ -36,81 +37,80 @@ class Battery
     public void createBasementColumn(int amountOfBasements, int amountOfElevatorPerColumn){
         ArrayList<Integer> servedFloors = new ArrayList<Integer>();
         int floor = -1;
-        for (int i = 0; i<amountOfBasements;i++){
+
+        for (int i = 0; i < amountOfBasements; i++){
             servedFloors.add(floor);
-            floor --;
+            floor--;
         }
-        var column = new Column(columnID, "online", amountOfBasements, amountOfElevatorPerColumn, servedFloors, true);
-        columnsList.add(column);
+        columnsList.add(new Column(columnID, "online", amountOfBasements, amountOfElevatorPerColumn, servedFloors, true));
         columnID++;
     }
 
     public void createColumns(int amountOfColumns, int amountOfFloors, int amountOfBasements, int amountOfElevatorPerColumn){
         int amountOfFloorsPerColumn = (int)Math.ceil(Double.valueOf(amountOfFloors / amountOfColumns));
         int floor = 1;
-        ArrayList<Integer> servedFloors = new ArrayList<Integer>(); 
 
-        for (int i = 0; i< amountOfFloorsPerColumn;i++){
-            if(floor <= amountOfFloors){
-                servedFloors.add(floor);
-                floor++;
+        for (int i = 1; i <= amountOfColumns; i++){ // i = 1 fixed the issue of the amount of columns
+            ArrayList<Integer> servedFloors = new ArrayList<Integer>(); 
+            for (int n = 0; n < amountOfFloorsPerColumn; n++){
+                if(floor <= amountOfFloors){
+                    servedFloors.add(floor);
+                    floor++;
+                }
             }
-        var column = new Column(columnID, "online", amountOfBasements, amountOfElevatorPerColumn, servedFloors, false);
-        columnsList.add(column);
-        columnID++;
+            columnsList.add(new Column(columnID, "online", amountOfFloors, amountOfElevatorPerColumn, servedFloors, false));
+            columnID++;
         }
-
     }
 
-    
     public void createFloorRequestButtons(int amountOfFloors){
-        var buttonFloor = 1;
-        for(int i = 0; i < amountOfFloors; i++){
-            var floorRequestButton = new FloorRequestButton(floorRequestButtonID, "OFF", buttonFloor, "up");
-            floorRequestButtonsList.add(floorRequestButton);
-            buttonFloor++;
+        int buttonFloor = 1;
+        for (int i = 1; i <= amountOfFloors; i++){
+            floorRequestButtonsList.add(new FloorRequestButton(floorRequestButtonID, "off", buttonFloor));
             floorRequestButtonID++;
+            buttonFloor++;
         }
-
     }
 
     public void createBasementFloorRequestButtons(int amountOfBasements){
-        var buttonFloor = -1;
-        for(int i = 0; i < amountOfBasements; i++){
-            var floorRequestButton = new FloorRequestButton(floorRequestButtonID, "OFF", buttonFloor, "down");
-            floorRequestButtonsList.add(floorRequestButton);
+        int buttonFloor = -1;
+        for (int i = 1; i <= amountOfBasements; i++){
+            floorRequestButtonsList.add(new FloorRequestButton(floorRequestButtonID, "off", buttonFloor));
             buttonFloor--;
             floorRequestButtonID++;
         }
     }
 
     public Column findBestColumn(int requestedFloor){
-        Column c = null;
-        for (Column column : columnsList) {
+        Column col = null;
+        for (Column column : columnsList){
             if(column.servedFloors.contains(requestedFloor)){
-                c = column;
+                col = column;
             }
         }
-        return c;
+        return col;
     }
 
-    public void assignElevator(int requestedFloor, String direction){
-        Column column = findBestColumn(requestedFloor);
-        Elevator elevator = column.findElevator(1, direction);
+
+    public void assignElevator(int requestedFloor, String direction){ 
+        Column column = findBestColumn(requestedFloor); 
+        Elevator elevator = column.findElevator(1, direction); 
         elevator.addNewRequest(1);
         elevator.move();
         elevator.addNewRequest(requestedFloor);
         elevator.move();
-        System.out.println("------------------------");
-        System.out.println("Elevator: " + elevator.ID + " from column: " + column.ID + " is on it's way to RC");
-        System.out.println("Client entering the elevator");
-        System.out.println("------------------------");
-        System.out.println("Elevator has arrived at floor: " + elevator.currentFloor);
-        //System.out.println("He gets out...");
+        elevator.operateDoors();
+        System.out.println("---------------------");
+        System.out.println("Elevator # " + elevator.ID + " provided by column # " + column.ID + " has been sent to the lobby");
+        System.out.println("Rocket Elevator Client has entered the elevator");
+        System.out.println("---------------------");
+        System.out.println("Elevator has reached floor # " + elevator.currentFloor);
+        System.out.println("Client is walking out, GoodBye");
     }
-    
 }
 
+
+// Column class
 class Column{
     public int ID;
     public String status;
@@ -131,64 +131,54 @@ class Column{
         this.elevatorsList = new ArrayList<Elevator>();
         this.callButtonsList = new ArrayList<CallButton>();
         this.servedFloors = servedFloors;
-        
         createElevators(amountOfFloors, amountOfElevators);
         createCallButtons(amountOfFloors, isBasement);
 
     }
 
-    public void createCallButtons(int amountOfFloors, Boolean isBasement){
-        int callButtonID = 1;
-        if(isBasement){
-            var buttonFloor = -1;
-            for(var i = 0; i < amountOfFloors; i++){
-                var callButton = new CallButton(callButtonID, "OFF", buttonFloor, "up");
-                callButtonsList.add(callButton);
-                buttonFloor --;
-                callButtonID ++;
-            }
-        }
-        else{
-            var buttonFloor = 1;
-            for(var i = 0; i < amountOfFloors; i++){
-                var callButton = new CallButton(callButtonID, "OFF", buttonFloor, "down");
-                callButtonsList.add(callButton);
-                buttonFloor ++;
-                callButtonID ++;
-            }
-        }
-
-    }
 
     public void createElevators(int amountOfFloors, int amountOfElevators){
-        var elevatorID = 1;
-        for(var i = 0; i < amountOfElevators; i++){
-            var elevator = new Elevator(elevatorID, "idle", amountOfFloors, 1);
-            elevatorsList.add(elevator);
-            elevatorID ++;
+        int elevatorID = 1;
+        for(int i = 0; i < amountOfElevators; i++){
+            elevatorsList.add(new Elevator(elevatorID, "idle", amountOfFloors, 1));
+            elevatorID++;
         }
-
     }
 
-   public void requestElevator(int userPosition, String direction){
-        Elevator elevator = findElevator(userPosition, direction);
+    public void createCallButtons(int amountOfFloors, Boolean isBasement){
+        int callButtonID = 1;
+        if (isBasement == true){
+            int buttonFloor = -1;
+            for(int i = 0; i < amountOfFloors; i++){
+                callButtonsList.add(new CallButton(callButtonID, "off", buttonFloor, "up"));
+                buttonFloor--;
+                callButtonID++;
+            }
+        } 
+        else{
+            int buttonFloor = 1;
+            for(int i = 0; i < amountOfFloors; i++){
+                callButtonsList.add(new CallButton(callButtonID, "off", buttonFloor, "down"));
+                buttonFloor++;
+                callButtonID++;
+            }
+        }
+    }
+
+    // This is the function that will be called when a user wants to go back to the lobby from any given floor
+    public void requestElevator(int userPosition, String direction){
+        Elevator elevator = this.findElevator(userPosition, direction);
         elevator.addNewRequest(userPosition);
         elevator.move();
         elevator.addNewRequest(1);
-        elevator.move();
         System.out.println("------------------------");
         System.out.println("Elevator: " + elevator.ID + " from column: " + this.ID + " is on it's way to floor: " + userPosition);
         System.out.println("He enters the elevator");
         System.out.println("------------------------");
         System.out.println("Elevator has arrived at floor: " + elevator.currentFloor);
-        //System.out.println("He gets out...");
     }
 
-    //We use a score system depending on the current elevators state. Since the bestScore and the referenceGap are 
-    //higher values than what could be possibly calculated, the first elevator will always become the default bestElevator, 
-    //before being compared with to other elevators. If two elevators get the same score, the nearest one is prioritized. Unlike
-    //the classic algorithm, the logic isn't exactly the same depending on if the request is done in the lobby or on a floor.
-
+    // This function in conjuction wwith checkIfElevatorIsBetter will return the best elevator
     public Elevator findElevator(int requestedFloor, String requestedDirection){ 
         HashMap<String, Object> bestElevatorInfo = new HashMap<String, Object>();
         bestElevatorInfo.put("bestElevator", null);
@@ -251,13 +241,14 @@ class Column{
 }
 
 
+
+// Elevator class
 class Elevator{
     public int ID;
     public String status;
     public int amountOfFloors;
     public String direction;
     public int currentFloor;
-    public int screenDisplay;
     public Door door;
     public ArrayList<Integer> floorRequestList; 
 
@@ -271,46 +262,42 @@ class Elevator{
         this.floorRequestList = new ArrayList<Integer>();
     }
 
+    // This function will make the elevator move to any given floor
     public void move(){
         while(floorRequestList.size() != 0){
-            var destination = floorRequestList.get(0);
+            int destination = floorRequestList.get(0);
             status = "moving";
-            if (currentFloor < destination){
+            if(currentFloor < destination){
                 direction = "up";
-                sortFloorList();   
+                sortFloorList();
                 while(currentFloor < destination){
                     currentFloor++;
-                    screenDisplay = currentFloor;
                 }
             }
             else if(currentFloor > destination){
                 direction = "down";
                 sortFloorList();
-                while(currentFloor < destination){
-                    currentFloor --;
-                    screenDisplay = currentFloor;
+                while(currentFloor > destination){
+                    currentFloor--;
                 }
             }
-            status = "stopped";
-            operateDoors();
+            status = "idle";
             floorRequestList.remove(0);
         }
-        status = "idle";
     }
 
     public void sortFloorList(){
-        if(direction == "up"){
-            Collections.sort(floorRequestList);
-        }
-        else{
-            Collections.reverse(floorRequestList);
-        }
-
+       if(direction == "up"){
+           Collections.sort(floorRequestList);
+       }
+       else{
+           Collections.reverse(floorRequestList);
+       }
     }
 
     public void operateDoors(){
-        
-
+        door.status = "open";
+        door.status = "closed";
     }
 
     public void addNewRequest(int requestedFloor){
@@ -327,6 +314,7 @@ class Elevator{
     }
 }
 
+// Call Button class
 class CallButton{
     public int ID;
     public String status;
@@ -341,18 +329,22 @@ class CallButton{
     }
 }
 
+
+// Floor request button class
 class FloorRequestButton{
     public int ID;
     public String status;
     public int floor;
 
-    public FloorRequestButton(int id, String status, int floor, String direction){
+    public FloorRequestButton(int id, String status, int floor){
         this.ID = id;
         this.status = status;
         this.floor = floor;
     }
 }
 
+
+// Door class
 class Door {
     int ID;
     String status;
@@ -368,43 +360,43 @@ public class Main {
 
     public static void main(String[] args) {
         System.out.println("------TESTS------");
-        Battery battery = new Battery(1, "online", 4, 60, 6, 5);
+        // Battery battery = new Battery(1, "online", 4, 60, 6, 5);
         
-        //--------------// SCENARIO 1 //-----------------------
-        // B1
-        battery.columnsList.get(1).elevatorsList.get(0).currentFloor = 20;
-        battery.columnsList.get(1).elevatorsList.get(0).direction = "down";
-        battery.columnsList.get(1).elevatorsList.get(0).floorRequestList.add(5);
+        // //--------------// SCENARIO 1 //-----------------------
+        // // B1
+        // battery.columnsList.get(1).elevatorsList.get(0).currentFloor = 20;
+        // battery.columnsList.get(1).elevatorsList.get(0).direction = "down";
+        // battery.columnsList.get(1).elevatorsList.get(0).floorRequestList.add(5);
     
-        // B2
-        battery.columnsList.get(1).elevatorsList.get(1).currentFloor = 3;
-        battery.columnsList.get(1).elevatorsList.get(1).direction = "up";
-        battery.columnsList.get(1).elevatorsList.get(1).floorRequestList.add(15);
+        // // B2
+        // battery.columnsList.get(1).elevatorsList.get(1).currentFloor = 3;
+        // battery.columnsList.get(1).elevatorsList.get(1).direction = "up";
+        // battery.columnsList.get(1).elevatorsList.get(1).floorRequestList.add(15);
     
-        // B3
-        battery.columnsList.get(1).elevatorsList.get(2).currentFloor = 13;
-        battery.columnsList.get(1).elevatorsList.get(2).direction = "down";
-        battery.columnsList.get(1).elevatorsList.get(2).floorRequestList.add(1);
+        // // B3
+        // battery.columnsList.get(1).elevatorsList.get(2).currentFloor = 13;
+        // battery.columnsList.get(1).elevatorsList.get(2).direction = "down";
+        // battery.columnsList.get(1).elevatorsList.get(2).floorRequestList.add(1);
     
-        // B4
-        battery.columnsList.get(1).elevatorsList.get(3).currentFloor = 15;
-        battery.columnsList.get(1).elevatorsList.get(3).direction = "down";
-        battery.columnsList.get(1).elevatorsList.get(3).floorRequestList.add(2);
+        // // B4
+        // battery.columnsList.get(1).elevatorsList.get(3).currentFloor = 15;
+        // battery.columnsList.get(1).elevatorsList.get(3).direction = "down";
+        // battery.columnsList.get(1).elevatorsList.get(3).floorRequestList.add(2);
     
-        // B5
-        battery.columnsList.get(1).elevatorsList.get(4).currentFloor = 6;
-        battery.columnsList.get(1).elevatorsList.get(4).direction = "down";
-        battery.columnsList.get(1).elevatorsList.get(4).floorRequestList.add(1);
-        battery.columnsList.get(1).elevatorsList.get(4).move();
+        // // B5
+        // battery.columnsList.get(1).elevatorsList.get(4).currentFloor = 6;
+        // battery.columnsList.get(1).elevatorsList.get(4).direction = "down";
+        // battery.columnsList.get(1).elevatorsList.get(4).floorRequestList.add(1);
+        // battery.columnsList.get(1).elevatorsList.get(4).move();
     
-         // User at lobby want's to go to floor 20, Elevator 5 should be sent
-        System.out.println("User is at the lobby and wants to go to floor 20");
-        System.out.println("He enters 20 on the pannel");
-        battery.assignElevator(20, "up");
+        //  // User at lobby want's to go to floor 20, Elevator 5 should be sent
+        // System.out.println("User is at the lobby and wants to go to floor 20");
+        // System.out.println("He enters 20 on the pannel");
+        // battery.assignElevator(20, "up");
 
         
         // //--------------------------------------------// Scenario 2 //-----------------------------------------------------
-        // // C1
+        // C1
         // battery.columnsList.get(2).elevatorsList.get(0).currentFloor = 1;
         // battery.columnsList.get(2).elevatorsList.get(0).direction = "up";
         // battery.columnsList.get(2).elevatorsList.get(0).floorRequestList.add(21);
