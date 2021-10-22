@@ -91,7 +91,6 @@ class Battery
         return col;
     }
 
-
     public void assignElevator(int requestedFloor, String direction){ 
         Column column = findBestColumn(requestedFloor); 
         Elevator elevator = column.findElevator(1, direction); 
@@ -136,7 +135,6 @@ class Column{
 
     }
 
-
     public void createElevators(int amountOfFloors, int amountOfElevators){
         int elevatorID = 1;
         for(int i = 0; i < amountOfElevators; i++){
@@ -173,12 +171,16 @@ class Column{
         elevator.addNewRequest(1);
         System.out.println("------------------------");
         System.out.println("Elevator: " + elevator.ID + " from column: " + this.ID + " is on it's way to floor: " + userPosition);
-        System.out.println("He enters the elevator");
+        System.out.println("Client enters the elevator");
         System.out.println("------------------------");
         System.out.println("Elevator has arrived at floor: " + elevator.currentFloor);
     }
 
-    // This function in conjuction wwith checkIfElevatorIsBetter will return the best elevator
+    //We use a score system depending on the current elevators state. Since the bestScore and the referenceGap are 
+    //higher values than what could be possibly calculated, the first elevator will always become the default bestElevator, 
+    //before being compared with to other elevators. If two elevators get the same score, the nearest one is prioritized. Unlike
+    //the classic algorithm, the logic isn't exactly the same depending on if the request is done in the lobby or on a floor.
+
     public Elevator findElevator(int requestedFloor, String requestedDirection){ 
         HashMap<String, Object> bestElevatorInfo = new HashMap<String, Object>();
         bestElevatorInfo.put("bestElevator", null);
@@ -187,21 +189,29 @@ class Column{
             
         if(requestedFloor == 1){
             for(Elevator elevator : elevatorsList){
+                //The elevator is at the lobby and already has some requests. It is about to leave but has not yet departed
                 if(1 == elevator.currentFloor && elevator.status == "stopped"){
                     bestElevatorInfo = checkIfElevatorIsBetter(1, elevator, requestedFloor, bestElevatorInfo);
                 }
+                //The elevator is at the lobby and has no requests
                 else if(1 == elevator.currentFloor && elevator.status == "idle"){
                     bestElevatorInfo = checkIfElevatorIsBetter(2, elevator, requestedFloor, bestElevatorInfo);
                 }
+                //The elevator is lower than me and is coming up.
+                //It means that I'm requesting an elevator to go to a basement, and the elevator is on it's way to me.
                 else if(1 > elevator.currentFloor && elevator.direction == "up"){
                     bestElevatorInfo = checkIfElevatorIsBetter(3, elevator, requestedFloor, bestElevatorInfo);
                 }
+                //The elevator is above me and is coming down.
+                //It means that I'm requesting an elevator to go to a floor, and the elevator is on it's way to me
                 else if(1 < elevator.currentFloor && elevator.direction == "down"){
                     bestElevatorInfo = checkIfElevatorIsBetter(3, elevator, requestedFloor, bestElevatorInfo);
                 }
+                //The elevator is not at the first floor, but doesn't have any request
                 else if(elevator.status == "idle"){
                     bestElevatorInfo = checkIfElevatorIsBetter(4, elevator, requestedFloor, bestElevatorInfo);
                 }
+                //The elevator is not available, but still could take the call if nothing better is found
                 else{
                     bestElevatorInfo = checkIfElevatorIsBetter(5, elevator, requestedFloor, bestElevatorInfo);
                 }
@@ -209,18 +219,23 @@ class Column{
         }
         else{
             for(Elevator elevator : elevatorsList){
+                //The elevator is at the same level as me, and is about to depart to the first floor
                 if(requestedFloor == elevator.currentFloor && elevator.status == "idle" && requestedDirection == elevator.direction){
                     bestElevatorInfo = checkIfElevatorIsBetter(1, elevator, requestedFloor, bestElevatorInfo);
                 }
+                //The elevator is lower than me and is going up. I'm on a basement, and the elevator can pick me up on it's way
                 else if(requestedFloor > elevator.currentFloor  && elevator.direction == "up" && requestedDirection == elevator.direction){
                     bestElevatorInfo = checkIfElevatorIsBetter(2, elevator, requestedFloor, bestElevatorInfo);
                 }
+                //The elevator is higher than me and is going down. I'm on a floor, and the elevator can pick me up on it's way
                 else if(requestedFloor < elevator.currentFloor  && elevator.direction == "down" && requestedDirection == elevator.direction){
                     bestElevatorInfo = checkIfElevatorIsBetter(2, elevator, requestedFloor, bestElevatorInfo);
                 }
+                //The elevator is stopped and has no requests
                 else if(elevator.status == "stopped"){
                     bestElevatorInfo = checkIfElevatorIsBetter(4, elevator, requestedFloor, bestElevatorInfo);
                 }
+                //The elevator is not available, but still could take the call if nothing better is found
                 else{
                     bestElevatorInfo = checkIfElevatorIsBetter(5, elevator, requestedFloor, bestElevatorInfo);
                 }
@@ -380,7 +395,7 @@ public class Main {
         System.out.println("------TESTS------");
         // Battery battery = new Battery(1, "online", 4, 60, 6, 5);
         
-        // //--------------// SCENARIO 1 //-----------------------
+        // //-------------- SCENARIO 1 -----------------------
         // // B1
         // battery.columnsList.get(1).elevatorsList.get(0).currentFloor = 20;
         // battery.columnsList.get(1).elevatorsList.get(0).direction = "down";
@@ -413,7 +428,7 @@ public class Main {
         // battery.assignElevator(20, "up");
 
         
-        // //--------------------------------------------// Scenario 2 //-----------------------------------------------------
+        // //-------------- SCENARIO 2 -----------------------
         // C1
         // battery.columnsList.get(2).elevatorsList.get(0).currentFloor = 1;
         // battery.columnsList.get(2).elevatorsList.get(0).direction = "up";
@@ -445,7 +460,7 @@ public class Main {
         // battery.assignElevator(36, "up");
 
 
-        // //--------------------------------------------// Scenario 3 //-----------------------------------------------------
+        // //-------------- SCENARIO 3 -----------------------
         // // D1
         // battery.columnsList.get(3).elevatorsList.get(0).currentFloor = 58;
         // battery.columnsList.get(3).elevatorsList.get(0).direction = "down";
@@ -476,7 +491,7 @@ public class Main {
         // System.out.println("He presses on the pannel");
         // battery.columnsList.get(3).requestElevator(54, "down");
 
-        // //-------------------------// Scenario 4 //------------------------------
+        // //-------------- SCENARIO 4 -----------------------
         // // A1
         // battery.columnsList.get(0).elevatorsList.get(0).currentFloor = -4;
 
