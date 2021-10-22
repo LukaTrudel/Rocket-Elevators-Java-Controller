@@ -1,4 +1,4 @@
-Welcome to Rocket Elevators!
+# Welcome to Rocket Elevators!
 
 This program simulates a commercial elevator controller that can be set up in a building with any number of batteries, columns, elevators or floors.
 
@@ -13,4 +13,4 @@ Since there are no floor buttons inside the elevators, users that are on a floor
 
 ---------------RUN YOUR OWN TEST!---------------
 
-To try the program for yourself, uncomment line 381 of the file "Main.java" and the following scenario you wish to test.
+To try the program for yourself, uncomment line 396 of the file "Main.java" and the following scenario you wish to test.
